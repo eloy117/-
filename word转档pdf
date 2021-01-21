@@ -1,0 +1,37 @@
+from win32com.client import Dispatch # pip install pywin32
+from os import walk
+import os
+
+wdFormatPDF = 17  # win32提供了多种word转换为其他文件的接口，其中FileFormat=17是转换为pdf
+
+
+def doc2pdf(input_file, input_file_name, output_dir):
+    try:
+        word = Dispatch('Word.Application')
+        doc = word.Documents.Open(input_file)
+    except Exception as e:
+        print("word无法打开, 发生如下错误:\n{}".format(e))
+    try:
+        pdf_file_name = input_file_name.replace(".docx", ".pdf").replace(".doc", ".pdf")
+        pdf_file = os.path.join(output_dir, pdf_file_name)
+        doc.SaveAs(pdf_file, FileFormat=wdFormatPDF)
+        doc.Close()
+        word.Quit()
+        print("成功转换\"{}\"".format(input_file_name))
+        print()
+    except Exception as e:
+        print("文件保存失败, 发生如下错误:\n{}".format(e))
+
+
+if __name__ == "__main__":
+    path_in=input("请输入word文件夹的路径（绝对路径） 要保证存在 建议复制粘贴")
+    path_out=input("请输入pdf文件夹的路径（绝对路径） 要保证存在 建议复制粘贴")
+    doc_files = []
+    directory = path_in# word文件夹
+    output_dir =path_out # pdf文件夹
+    for root, _, filenames in walk(directory):  # 第2个返回值是dirs， 用不上使用_占位
+        for file in filenames:
+            if file.endswith(".doc") or file.endswith(".docx"):
+                print("转换{}中......".format(file))
+                doc2pdf(os.path.join(root, file), file, output_dir)
+
